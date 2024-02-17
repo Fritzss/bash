@@ -14,14 +14,14 @@ openssl genrsa -aes256 -out $CANAME.key 4096
 # the following will ask for common name, country, ...
 openssl req -x509 -new -nodes -key $CANAME.key -sha256 -days 3650 -out $CANAME.crt
 # ... or you provide common name, country etc. via:
-openssl req -x509 -new -nodes -key $CANAME.key -sha256 -days 3650 -out $CANAME.crt -subj '/CN=flat CA/C=AT/ST=$CITY/L=$LOCATION/O=$ORG'
+openssl req -x509 -new -nodes -key $CANAME.key -sha256 -days 3650 -out $CANAME.crt -subj '/CN=$LOCATION CA/C=AT/ST=$CITY/L=$LOCATION/O=$ORG'
 
 
 cp $CANAME.crt /usr/local/share/ca-certificates
 update-ca-certificates
 
 
-openssl req -new -nodes -out $MYCERT.csr -newkey rsa:4096 -keyout $MYCERT.key -subj '/CN=pass.flat/C=AT/ST=$CITY/L=$LOCATION/O=$ORG'
+openssl req -new -nodes -out $MYCERT.csr -newkey rsa:4096 -keyout $MYCERT.key -subj '/CN=$MYCERT/C=AT/ST=$CITY/L=$LOCATION/O=$ORG'
 # create a v3 ext file for SAN properties
 cat > $MYCERT.v3.ext << EOF
 authorityKeyIdentifier=keyid,issuer

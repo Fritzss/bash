@@ -3,24 +3,26 @@ CITY=town
 LOCATION=local
 ORG=org
 MYCERT=asd.example
-
+# 3650 days = 10 years
+RETENTION_CA=3650
+RETENTION=3650
 # optional
 mkdir $CANAME
 cd $CANAME
 # generate aes encrypted private key
 openssl genrsa -aes256 -out $CANAME.key 4096
 
-# create certificate, 1826 days = 5 years
+# create CA certificate, 3650 days = 10 years
 # the following will ask for common name, country, ...
-openssl req -x509 -new -nodes -key $CANAME.key -sha256 -days 3650 -out $CANAME.crt
+openssl req -x509 -new -nodes -key $CANAME.key -sha256 -days $RETENTION_CA -out $CANAME.crt
 # ... or you provide common name, country etc. via:
-openssl req -x509 -new -nodes -key $CANAME.key -sha256 -days 3650 -out $CANAME.crt -subj "/CN=$LOCATION CA/C=AT/ST=$CITY/L=$LOCATION/O=$ORG"
+openssl req -x509 -new -nodes -key $CANAME.key -sha256 -days $RETENTION_CA -out $CANAME.crt -subj "/CN=$LOCATION CA/C=AT/ST=$CITY/L=$LOCATION/O=$ORG"
 
-
+# add CA trusted store
 cp $CANAME.crt /usr/local/share/ca-certificates
 update-ca-certificates
 
-
+# create CSR
 openssl req -new -nodes -out $MYCERT.csr -newkey rsa:4096 -keyout $MYCERT.key -subj "/CN=$MYCERT/C=AT/ST=$CITY/L=$LOCATION/O=$ORG"
 # create a v3 ext file for SAN properties
 cat > $MYCERT.v3.ext << EOF

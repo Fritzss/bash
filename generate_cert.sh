@@ -1,8 +1,8 @@
-CANAME=CA
+ORG=org
+CANAME=CA_$ORG
 CITY=town
 LOCATION=local
-ORG=org
-MYCERT=asd.example
+MYCERT=<asd>.$LOCATION.$ORG
 # 3650 days = 10 years
 RETENTION_CA=3650
 RETENTION=3650
@@ -31,9 +31,9 @@ basicConstraints=CA:FALSE
 keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
 subjectAltName = @alt_names
 [alt_names]
-DNS.1 = asd.example
-DNS.2 = qwe.example
-DNS.3 = zxc.example
+DNS.1 = <asd>.$LOCATION.$ORG
+DNS.2 = <qwe>.$LOCATION.$ORG
+DNS.3 = <zxc>.$LOCATION.$ORG
 EOF
 
 #sign crt

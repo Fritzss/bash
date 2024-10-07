@@ -39,4 +39,6 @@ EOF
 #sign crt
 openssl x509 -req -in $MYCERT.csr -CA $CANAME.crt -CAkey $CANAME.key -CAcreateserial -out $MYCERT.crt -days 730 -sha256 -extfile $MYCERT.v3.ext
 # remove password from private key
-openssl rsa -in $CANAME.key -out $CANAME.key
+openssl rsa -in $MYCERT.key -out $MYCERT.key
+#check 
+openssl x509 -in $MYCERT.crt -text | grep -i dns

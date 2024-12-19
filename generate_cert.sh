@@ -34,6 +34,7 @@ subjectAltName = @alt_names
 DNS.1 = <asd>.$LOCATION.$ORG
 DNS.2 = <qwe>.$LOCATION.$ORG
 DNS.3 = <zxc>.$LOCATION.$ORG
+IP.1 = <ipaddr>
 EOF
 
 #sign crt

@@ -1,45 +1,78 @@
-ORG=org
-CANAME=CA_$ORG
-CITY=town
-LOCATION=local
-MYCERT=<asd>.$LOCATION.$ORG
-# 3650 days = 10 years
-RETENTION_CA=3650
-RETENTION=3650
-# optional
-mkdir $CANAME
-cd $CANAME
-# generate aes encrypted private key
-openssl genrsa -aes256 -out $CANAME.key 4096
+#!/bin/bash
 
-# create CA certificate, 3650 days = 10 years
-# the following will ask for common name, country, ...
-openssl req -x509 -new -nodes -key $CANAME.key -sha256 -days $RETENTION_CA -out $CANAME.crt
-# ... or you provide common name, country etc. via:
-openssl req -x509 -new -nodes -key $CANAME.key -sha256 -days $RETENTION_CA -out $CANAME.crt -subj "/CN=$LOCATION CA/C=AT/ST=$CITY/L=$LOCATION/O=$ORG"
+# Конфигурационные параметры
+ORG="org"
+CANAME="CA_${ORG}"
+CITY="town"
+LOCATION="local"
+MYCERT="<asd>.${LOCATION}.${ORG}"
+RETENTION_CA=3650   # 10 лет для CA
+RETENTION=3650      # 10 лет для сертификатов
+CA_DIR="${CANAME}"  # Директория для файлов CA
 
-# add CA trusted store
-cp $CANAME.crt /usr/local/share/ca-certificates
-update-ca-certificates
+# Создание директории для CA
+mkdir -p "${CA_DIR}" || exit 1
+cd "${CA_DIR}" || exit 1
 
-# create CSR
-openssl req -new -nodes -out $MYCERT.csr -newkey rsa:4096 -keyout $MYCERT.key -subj "/CN=$MYCERT/C=AT/ST=$CITY/L=$LOCATION/O=$ORG"
-# create a v3 ext file for SAN properties
-cat > $MYCERT.v3.ext << EOF
+# Генерация ключа CA с шифрованием AES-256
+echo "Генерация ключа Центра Сертификации..."
+openssl genrsa -aes256 -out "${CANAME}.key" 4096 || exit 1
+
+# Создание самоподписанного сертификата CA
+echo "Создание сертификата Центра Сертификации..."
+openssl req -x509 -new -nodes \
+    -key "${CANAME}.key" \
+    -sha256 \
+    -days "${RETENTION_CA}" \
+    -out "${CANAME}.crt" \
+    -subj "/CN=${LOCATION} CA/C=AT/ST=${CITY}/L=${LOCATION}/O=${ORG}" || exit 1
+
+# Добавление CA в доверенные сертификаты системы
+echo "Добавление CA в системное хранилище..."
+sudo cp "${CANAME}.crt" /usr/local/share/ca-certificates/ || exit 1
+sudo update-ca-certificates || exit 1
+
+# Генерация приватного ключа для сертификата
+echo "Создание ключа сертификата..."
+openssl req -new -nodes \
+    -out "${MYCERT}.csr" \
+    -newkey rsa:4096 \
+    -keyout "${MYCERT}.key" \
+    -subj "/CN=${MYCERT}/C=AT/ST=${CITY}/L=${LOCATION}/O=${ORG}" || exit 1
+
+# Создание конфигурационного файла расширений (SAN)
+echo "Генерация конфигурации SAN..."
+cat > "${MYCERT}.v3.ext" << EOF
 authorityKeyIdentifier=keyid,issuer
 basicConstraints=CA:FALSE
-keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
-subjectAltName = @alt_names
+keyUsage=digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment
+subjectAltName=@alt_names
+
 [alt_names]
-DNS.1 = <asd>.$LOCATION.$ORG
-DNS.2 = <qwe>.$LOCATION.$ORG
-DNS.3 = <zxc>.$LOCATION.$ORG
-IP.1 = <ipaddr>
+DNS.1=${MYCERT}
+DNS.2=<qwe>.${LOCATION}.${ORG}
+DNS.3=<zxc>.${LOCATION}.${ORG}
+IP.1=<ipaddr>
 EOF
 
-#sign crt
-openssl x509 -req -in $MYCERT.csr -CA $CANAME.crt -CAkey $CANAME.key -CAcreateserial -out $MYCERT.crt -days 730 -sha256 -extfile $MYCERT.v3.ext
-# remove password from private key
-openssl rsa -in $MYCERT.key -out $MYCERT.key
-#check 
-openssl x509 -in $MYCERT.crt -text | grep -i dns
+# Подпись сертификата CA
+echo "Подпись сертификата..."
+openssl x509 -req \
+    -in "${MYCERT}.csr" \
+    -CA "${CANAME}.crt" \
+    -CAkey "${CANAME}.key" \
+    -CAcreateserial \
+    -out "${MYCERT}.crt" \
+    -days "${RETENTION}" \
+    -sha256 \
+    -extfile "${MYCERT}.v3.ext" || exit 1
+
+# Удаление пароля из приватного ключа
+echo "Удаление пароля из ключа..."
+openssl rsa -in "${MYCERT}.key" -out "${MYCERT}.key" || exit 1
+
+# Проверка DNS-записей в сертификате
+echo "Проверка DNS-записей:"
+openssl x509 -in "${MYCERT}.crt" -noout -text | grep -i DNS
+
+echo "Готово! Сертификаты находятся в директории: ${CA_DIR}"

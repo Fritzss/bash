@@ -11,12 +11,12 @@ RETENTION=3650      # 10 лет для сертификатов
 CA_DIR="${CANAME}"  # Директория для файлов CA
 
 # Создание директории для CA
-mkdir -p "${CA_DIR}" || exit 1
-cd "${CA_DIR}" || exit 1
+mkdir -p "${CA_DIR}" 
+cd "${CA_DIR}" 
 
 # Генерация ключа CA с шифрованием AES-256
 echo "Генерация ключа Центра Сертификации..."
-openssl genrsa -aes256 -out "${CANAME}.key" 4096 || exit 1
+openssl genrsa -aes256 -out "${CANAME}.key" 4096
 
 # Создание самоподписанного сертификата CA
 echo "Создание сертификата Центра Сертификации..."
@@ -25,12 +25,13 @@ openssl req -x509 -new -nodes \
     -sha256 \
     -days "${RETENTION_CA}" \
     -out "${CANAME}.crt" \
-    -subj "/CN=${LOCATION} CA/C=AT/ST=${CITY}/L=${LOCATION}/O=${ORG}" || exit 1
+    -subj "/CN=${LOCATION} CA/C=AT/ST=${CITY}/L=${LOCATION}/O=${ORG}" \
+    -passin pass:<ca password>
 
 # Добавление CA в доверенные сертификаты системы
 echo "Добавление CA в системное хранилище..."
-sudo cp "${CANAME}.crt" /usr/local/share/ca-certificates/ || exit 1
-sudo update-ca-certificates || exit 1
+sudo cp "${CANAME}.crt" /usr/local/share/ca-certificates/
+sudo update-ca-certificates
 
 # Генерация приватного ключа для сертификата
 echo "Создание ключа сертификата..."
@@ -38,7 +39,8 @@ openssl req -new -nodes \
     -out "${MYCERT}.csr" \
     -newkey rsa:4096 \
     -keyout "${MYCERT}.key" \
-    -subj "/CN=${MYCERT}/C=AT/ST=${CITY}/L=${LOCATION}/O=${ORG}" || exit 1
+    -subj "/CN=${MYCERT}/C=AT/ST=${CITY}/L=${LOCATION}/O=${ORG}" 
+    -passin pass:<crt pass>
 
 # Создание конфигурационного файла расширений (SAN)
 echo "Генерация конфигурации SAN..."
@@ -65,11 +67,14 @@ openssl x509 -req \
     -out "${MYCERT}.crt" \
     -days "${RETENTION}" \
     -sha256 \
-    -extfile "${MYCERT}.v3.ext" || exit 1
+    -extfile "${MYCERT}.v3.ext"
+    -passin pass:<ca pass>
 
 # Удаление пароля из приватного ключа
 echo "Удаление пароля из ключа..."
-openssl rsa -in "${MYCERT}.key" -out "${MYCERT}.key" || exit 1
+openssl rsa -in "${MYCERT}.key" \
+    -out "${MYCERT}.key" \
+    -pass: pass:<crt pass>
 
 # Проверка DNS-записей в сертификате
 echo "Проверка DNS-записей:"

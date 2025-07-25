@@ -119,7 +119,7 @@ text
 
 bash
 ```
-openssl x509 -in CA_org/<asd>.local.org.crt -text -noout
+openssl x509 -in CA_org/<asd>.local.org.crt -text -noout | grep -i dns
 ```
 Лицензия
 Этот скрипт распространяется по лицензии MIT. Используйте на свой страх и риск.

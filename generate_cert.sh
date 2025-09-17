@@ -39,7 +39,7 @@ openssl req -new -nodes \
     -out "${MYCERT}.csr" \
     -newkey rsa:4096 \
     -keyout "${MYCERT}.key" \
-    -subj "/CN=${MYCERT}/C=AT/ST=${CITY}/L=${LOCATION}/O=${ORG}" 
+    -subj "/CN=${MYCERT}/C=AT/ST=${CITY}/L=${LOCATION}/O=${ORG}" \
     -passin pass:<crt pass>
 
 # Создание конфигурационного файла расширений (SAN)

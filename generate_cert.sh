@@ -76,6 +76,8 @@ openssl rsa -in "${MYCERT}.key" \
     -out "${MYCERT}.key" \
     -pass: pass:<crt pass>
 
+# all chains
+cat "${CANAME}.crt" >> "${MYCERT}.crt"
 # Проверка DNS-записей в сертификате
 echo "Проверка DNS-записей:"
 openssl x509 -in "${MYCERT}.crt" -noout -text | grep -i DNS

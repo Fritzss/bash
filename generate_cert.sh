@@ -90,7 +90,7 @@ openssl x509 -req \
 echo "Удаление пароля из ключа..."
 openssl rsa -in "${MYCERT}.key" \
     -out "${MYCERT}.key" \
-    -pass: pass:$PASS
+    -passin pass:$PASS
 
 # all chains
 cat "../${CANAME}/${CANAME}.crt" >> "${MYCERT}.crt"

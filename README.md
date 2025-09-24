@@ -134,17 +134,17 @@ chmod +x create_cert.sh
 ├── config_crt.cfg
 ├── create_CA.sh
 ├── create_cert.sh
-├── CA_garda/
+├── CA_<org>/
 │   ├── .pass
-│   ├── CA_garda.key
-│   ├── CA_garda.crt
-│   └── CA_garda.srl
+│   ├── CA_<org>.key
+│   ├── CA_<org>.crt
+│   └── CA_<org>.srl
 └── netbox/
     ├── .pass
-    ├── netbox.key
-    ├── netbox.csr
-    ├── netbox.crt
-    └── netbox.v3.ext
+    ├── <certificate_name>.key
+    ├── <certificate_name>.csr
+    ├── <certificate_name>.crt
+    └── <certificate_name>.v3.ext
 ```
 
 # Особенности

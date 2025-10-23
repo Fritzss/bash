@@ -1,11 +1,13 @@
 #!/bin/bash
+CONFIG_FILE="./config_crt.cfg"
 
-ORG="<org>"
-CANAME="CA_${ORG}"
-CITY="<city>"
-LOCATION="<location>"
-RETENTION_CA=3650
-CA_DIR="${CANAME}"
+if [ -f "$CONFIG_FILE" ]; then
+        source "$CONFIG_FILE"
+        echo "Configuration loaded from $CONFIG_FILE"
+else
+        echo "Error: Configuration file $CONFIG_FILE not found."
+        exit 1
+fi
 
 mkdir -p "${CA_DIR}"
 cd "${CA_DIR}"

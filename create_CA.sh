@@ -9,9 +9,12 @@ else
         exit 1
 fi
 
-mkdir -p "${CA_DIR}"
-cd "${CA_DIR}"
-pwd
+if [ -s "./${CA_DIR}" ] ; then
+   ls "./${CA_DIR}"
+else 
+  mkdir -p "${CA_DIR}"
+  cd "${CA_DIR}"
+  pwd
 
 if [ -s ./.pass ] ; then
    PASS=$(cat ./.pass)
@@ -43,3 +46,4 @@ fi
 
 sudo cp "${CANAME}.crt" /usr/local/share/ca-certificates/
 sudo update-ca-certificates
+fi
